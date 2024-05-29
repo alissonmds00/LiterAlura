@@ -2,6 +2,7 @@ package dev.alissonmds.literalura.models;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -12,15 +13,28 @@ public class Autor {
     private Long id;
     @Column(unique = true)
     private String nome;
-    @ManyToMany
-    private List<Livro> livros;
+    @OneToMany(mappedBy = "autor", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Livro> livros = new ArrayList<>();
+    private int nascimento;
+    private int morte;
 
     public Autor() {
     }
 
-    public Autor(String nome) {
-        this.nome = nome;
+    public Autor(DadosAutor dados) {
+        this.nome = dados.nome();
+        try {
+            this.nascimento = dados.nascimento();
+        } catch (Exception e) {
+            this.nascimento = 0;
+        }
+        try {
+            this.morte = dados.morte();
+        } catch (Exception e) {
+            this.morte = 0;
+        }
     }
+
 
     public Long getId() {
         return id;
@@ -44,5 +58,28 @@ public class Autor {
 
     public void setLivros(List<Livro> livros) {
         this.livros = livros;
+    }
+
+    public int getNascimento() {
+        return nascimento;
+    }
+
+    public void setNascimento(int nascimento) {
+        this.nascimento = nascimento;
+    }
+
+    public int getMorte() {
+        return morte;
+    }
+
+    public void setMorte(int morte) {
+        this.morte = morte;
+    }
+
+    @Override
+    public String toString() {
+        return "nome='" + nome + '\'' +
+                ", nascimento=" + nascimento +
+                ", morte=" + morte;
     }
 }

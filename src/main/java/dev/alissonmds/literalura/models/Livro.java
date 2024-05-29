@@ -13,44 +13,35 @@ public class Livro {
     private Long id;
     @Column(unique = true)
     private String titulo;
-    @ManyToMany(mappedBy = "livros", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Autor> autor = new ArrayList<>();
-    private List<String> idiomas;
-    private long downloads;
+    @ManyToOne
+    private Autor autor;
+    private List<String> idiomas = new ArrayList<>();
+    private Long downloads;
 
     public Livro() {
     }
 
-    public Livro(Long id, String titulo, String autores, String idiomas, long downloads) {
-        this.id = id;
-        this.titulo = titulo;
-        this.downloads = downloads;
-        //Recebe lista de autores e idiomas em string e as separa.
-        String[] stringIdiomas = idiomas.split(", ");
-        for (String idioma : stringIdiomas) {
-            this.getIdiomas().add(idioma);
-        }
-        String[] stringAutores = autores.split(", ");
-        for (String nome : stringAutores) {
-            Autor autor = new Autor(nome);
-            autor.getLivros().add(this);
-            this.autor.add(autor);
-        }
+    public Livro(DadosLivro dados, Autor autor) {
+        this.titulo = dados.titulo();
+        this.downloads = dados.downloads();
+        this.getIdiomas().addAll(dados.idiomas());
+        this.autor = autor;
+        autor.getLivros().add(this);
     }
 
-    public List<Autor> getAutor() {
+    public Autor getAutor() {
         return autor;
     }
 
-    public void setAutor(List<Autor> autor) {
+    public void setAutor(Autor autor) {
         this.autor = autor;
     }
 
-    public long getDownloads() {
+    public Long getDownloads() {
         return downloads;
     }
 
-    public void setDownloads(long downloads) {
+    public void setDownloads(Long downloads) {
         this.downloads = downloads;
     }
 
@@ -76,5 +67,14 @@ public class Livro {
 
     public void setTitulo(String titulo) {
         this.titulo = titulo;
+    }
+
+
+    @Override
+    public String toString() {
+        return "titulo = '" + titulo + '\'' +
+                ", autor = " + autor.getNome() +
+                ", idiomas = " + idiomas +
+                ", downloads = " + downloads;
     }
 }
