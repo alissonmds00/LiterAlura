@@ -10,6 +10,7 @@ import dev.alissonmds.literalura.services.API;
 import dev.alissonmds.literalura.services.ConverteDados;
 
 import java.io.IOException;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -120,7 +121,22 @@ public class Menu {
 
     private void listarAutoresRegistrados() {
         List<Autor> autores = AUTOR_REPOSITORY.findAll();
-        autores.forEach(a -> System.out.println("""
+        exibirInfoAutores(autores);
+    }
+    private void listarAutoresVivosAteAno() {
+        System.out.println("Por qual ano você deseja filtrar?");
+        try {
+            int ano = input.nextInt();
+            List<Autor> autoresFiltrados = AUTOR_REPOSITORY.filterAutoresVivos(ano);
+            System.out.println("-=-=-=-Autores vivos até o ano %s-=-=-=-".formatted(ano));
+            exibirInfoAutores(autoresFiltrados);
+        } catch (InputMismatchException e) {
+            System.out.println("O ano digitado não é válido.");
+        }
+    }
+
+    private void exibirInfoAutores(List<Autor> lista) {
+        lista.forEach(a -> System.out.println("""
                -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
                 %s (%d-%d)
                 Obras: %s
@@ -128,9 +144,7 @@ public class Menu {
                """
                 .formatted(a.getNome(), a.getNascimento(), a.getMorte(), a.getNomesLivros())));
     }
-    private void listarAutoresVivosAteAno() {
-        System.out.println("Por qual ano você deseja filtrar?");
-    }
+
     private void listarLivrosDisponiveisEmIdioma() {
     }
 }
