@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "autores")
@@ -74,6 +75,12 @@ public class Autor {
 
     public void setMorte(int morte) {
         this.morte = morte;
+    }
+
+    public List<String> getNomesLivros() {
+        return this.livros.stream()
+                .map(l -> l.getTitulo())
+                .collect(Collectors.toList());
     }
 
     @Override

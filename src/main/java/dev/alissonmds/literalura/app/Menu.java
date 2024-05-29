@@ -98,6 +98,7 @@ public class Menu {
 
     private void listarLivrosRegistrados() {
         try {
+            System.out.println();
             List<Livro> livros = LIVRO_REPOSITORY.findAll();
             if (!livros.isEmpty()) {
                 livros.forEach(l -> System.out.println("""
@@ -105,7 +106,8 @@ public class Menu {
                             %s - %s
                             Disponível nos idiomas: %s
                             Total de downloads: %d
-                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-""".
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+                            """.
                         formatted(l.getTitulo(), l.getAutor().getNome(),
                                 l.getIdiomas(),
                                 l.getDownloads())
@@ -117,8 +119,17 @@ public class Menu {
     }
 
     private void listarAutoresRegistrados() {
+        List<Autor> autores = AUTOR_REPOSITORY.findAll();
+        autores.forEach(a -> System.out.println("""
+               -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+                %s (%d-%d)
+                Obras: %s
+               -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+               """
+                .formatted(a.getNome(), a.getNascimento(), a.getMorte(), a.getNomesLivros())));
     }
     private void listarAutoresVivosAteAno() {
+        System.out.println("Por qual ano você deseja filtrar?");
     }
     private void listarLivrosDisponiveisEmIdioma() {
     }
