@@ -1,9 +1,6 @@
 package dev.alissonmds.literalura.app;
 
-import dev.alissonmds.literalura.models.Autor;
-import dev.alissonmds.literalura.models.DadosAutor;
-import dev.alissonmds.literalura.models.DadosLivro;
-import dev.alissonmds.literalura.models.Livro;
+import dev.alissonmds.literalura.models.*;
 import dev.alissonmds.literalura.repository.AutorRepository;
 import dev.alissonmds.literalura.repository.LivroRepository;
 import dev.alissonmds.literalura.services.API;
@@ -13,6 +10,7 @@ import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Menu {
     Scanner input = new Scanner(System.in);
@@ -69,18 +67,25 @@ public class Menu {
 
     private void buscarLivroPeloTitulo() {
         try {
+            String json = "";
+            DadosAutor dadosAutor = null;
+            DadosLivro dadosLivro = null;
             System.out.println("Qual o nome do livro?");
             String nomeLivro = input.nextLine();
             String url = "%s%s".formatted(API_URL, nomeLivro.replaceAll(" ", "+"));
-            String json = API.obterDados(url);
-            var dadosLivro = conversor.converteDados(json, DadosLivro.class);
-            var dadosAutor = conversor.converteDados(json, DadosAutor.class);
-            var autor = new Autor(dadosAutor);
-            var livro = new Livro(dadosLivro, autor);
-            salvarLivro(livro, autor);
-            System.out.println(livro);
+            try {
+                json = API.obterDados(url);
+                dadosLivro = conversor.converteDados(json, DadosLivro.class);
+                dadosAutor = conversor.converteDados(json, DadosAutor.class);
+                var autor = new Autor(dadosAutor);
+                var livro = new Livro(dadosLivro, autor);
+                System.out.println(livro);
+                salvarLivro(livro, autor);
+            } catch (NullPointerException e) {
+                System.out.println("Não foi possível encontrar o livro");
+            }
         } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+            System.out.println("Não foi possível encontrar o livro " + e.getMessage());
         }
     }
 
@@ -102,17 +107,7 @@ public class Menu {
             System.out.println();
             List<Livro> livros = LIVRO_REPOSITORY.findAll();
             if (!livros.isEmpty()) {
-                livros.forEach(l -> System.out.println("""
-                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-                            %s - %s
-                            Disponível nos idiomas: %s
-                            Total de downloads: %d
-                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-                            """.
-                        formatted(l.getTitulo(), l.getAutor().getNome(),
-                                l.getIdiomas(),
-                                l.getDownloads())
-                ));
+                exibirInfoLivros(livros);
             }
         } catch (Exception e) {
             System.out.println("Não foi possível consultar os livros" + e.getMessage());
@@ -145,6 +140,30 @@ public class Menu {
                 .formatted(a.getNome(), a.getNascimento(), a.getMorte(), a.getNomesLivros())));
     }
 
+    public void exibirInfoLivros(List<Livro> lista) {
+        lista.forEach(l -> System.out.println("""
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+                            %s - %s
+                            Disponível nos idiomas: %s
+                            Total de downloads: %d
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+                            """.
+                formatted(l.getTitulo(), l.getAutor().getNome(),
+                        l.getIdiomas(),
+                        l.getDownloads())
+        ));
+    }
+
     private void listarLivrosDisponiveisEmIdioma() {
+        System.out.println("Qual idioma você deseja filtrar os livros?");
+        String idioma = input.nextLine();
+        Idioma idiomaBuscado = Idioma.idiomaFromString(idioma);
+        //List<Livro> livrosFiltrados = LIVRO_REPOSITORY.findByIdiomasContaining(idiomaBuscado);
+        List<Livro> livrosFiltrados = LIVRO_REPOSITORY.findAll().stream().
+                filter(l -> l.getIdiomas().contains(idiomaBuscado)).
+                collect(Collectors.toList());
+        if (!livrosFiltrados.isEmpty()) {
+            exibirInfoLivros(livrosFiltrados);
+        }
     }
 }

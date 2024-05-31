@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "livros")
@@ -15,7 +16,8 @@ public class Livro {
     private String titulo;
     @ManyToOne
     private Autor autor;
-    private List<String> idiomas = new ArrayList<>();
+    @Enumerated(EnumType.STRING)
+    private List<Idioma> idiomas = new ArrayList<>();
     private Long downloads;
 
     public Livro() {
@@ -24,9 +26,13 @@ public class Livro {
     public Livro(DadosLivro dados, Autor autor) {
         this.titulo = dados.titulo();
         this.downloads = dados.downloads();
-        this.getIdiomas().addAll(dados.idiomas());
         this.autor = autor;
         autor.getLivros().add(this);
+
+        List<Idioma> idiomas = dados.idiomas().stream()
+                .map(i -> Idioma.idiomaFromAPI(i))
+                .collect(Collectors.toList());
+        this.getIdiomas().addAll(idiomas);
     }
 
     public Autor getAutor() {
@@ -53,11 +59,11 @@ public class Livro {
         this.id = id;
     }
 
-    public List<String> getIdiomas() {
+    public List<Idioma> getIdiomas() {
         return idiomas;
     }
 
-    public void setIdiomas(List<String> idiomas) {
+    public void setIdiomas(List<Idioma> idiomas) {
         this.idiomas = idiomas;
     }
 
